@@ -326,7 +326,7 @@ function App() {
         <div className="invoice-page">
           <header className="invoice-topbar">
             <button type="button" className="ghost-button" onClick={() => setCurrentPage('landing')}>Back</button>
-            <div>
+            <div className="invoice-heading">
               <p className="eyebrow">Invoice maker</p>
               <h2>{company.display_name || 'Shakti Tarinee Modern Rice Mill'}</h2>
             </div>
@@ -414,14 +414,38 @@ function App() {
 
                 {invoiceForm.rows.map((row, index) => (
                   <div key={index} className="item-row">
-                    <input value={row.description} onChange={(event) => updateRow(index, 'description', event.target.value)} placeholder="Rice variety / item" />
-                    <input value={row.hsn} onChange={(event) => updateRow(index, 'hsn', event.target.value)} placeholder="HSN" />
-                    <input type="number" value={row.quantity} onChange={(event) => updateRow(index, 'quantity', event.target.value)} />
-                    <input type="number" value={row.rate} onChange={(event) => updateRow(index, 'rate', event.target.value)} />
-                    <input type="number" value={row.igst} onChange={(event) => updateRow(index, 'igst', event.target.value)} />
-                    <input type="number" value={row.cgst} onChange={(event) => updateRow(index, 'cgst', event.target.value)} />
-                    <input type="number" value={row.sgst} onChange={(event) => updateRow(index, 'sgst', event.target.value)} />
-                    <strong>{formatCurrency(totals.rows[index]?.total || 0)}</strong>
+                    <label className="item-field item-description">
+                      <span>Item</span>
+                      <input value={row.description} onChange={(event) => updateRow(index, 'description', event.target.value)} placeholder="Rice variety / item" />
+                    </label>
+                    <label className="item-field">
+                      <span>HSN</span>
+                      <input value={row.hsn} onChange={(event) => updateRow(index, 'hsn', event.target.value)} placeholder="HSN" />
+                    </label>
+                    <label className="item-field">
+                      <span>Qty</span>
+                      <input type="number" value={row.quantity} onChange={(event) => updateRow(index, 'quantity', event.target.value)} />
+                    </label>
+                    <label className="item-field">
+                      <span>Rate</span>
+                      <input type="number" value={row.rate} onChange={(event) => updateRow(index, 'rate', event.target.value)} />
+                    </label>
+                    <label className="item-field">
+                      <span>IGST %</span>
+                      <input type="number" value={row.igst} onChange={(event) => updateRow(index, 'igst', event.target.value)} />
+                    </label>
+                    <label className="item-field">
+                      <span>CGST %</span>
+                      <input type="number" value={row.cgst} onChange={(event) => updateRow(index, 'cgst', event.target.value)} />
+                    </label>
+                    <label className="item-field">
+                      <span>SGST %</span>
+                      <input type="number" value={row.sgst} onChange={(event) => updateRow(index, 'sgst', event.target.value)} />
+                    </label>
+                    <div className="item-total">
+                      <span>Amount</span>
+                      <strong>{formatCurrency(totals.rows[index]?.total || 0)}</strong>
+                    </div>
                     <button type="button" className="remove-row" onClick={() => removeRow(index)}>Remove</button>
                   </div>
                 ))}

@@ -176,6 +176,11 @@ label {
   font-weight: 700;
 }
 
+.form-panel label,
+.company-settings-form label {
+  text-align: left;
+}
+
 input, textarea {
   width: 100%;
   border: 1px solid #dbe2ea;
@@ -208,8 +213,22 @@ input, textarea {
   margin-bottom: 10px;
 }
 
+.item-field {
+  min-width: 0;
+}
+
+.item-field span,
+.item-total span {
+  display: none;
+}
+
 .item-row input {
   min-height: 42px;
+}
+
+.item-total {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .add-row-button {
@@ -477,7 +496,67 @@ input, textarea {
   }
 }
 
-@media (max-width: 760px) {
+@media screen and (max-width: 900px) {
+  .landing-page {
+    padding: 24px 16px;
+  }
+
+  .landing-card {
+    width: 100%;
+    padding: 36px 22px;
+    border-radius: 18px;
+  }
+
+  .landing-card h1 {
+    font-size: clamp(1.9rem, 9vw, 2.65rem);
+    overflow-wrap: anywhere;
+  }
+
+  .landing-card p {
+    font-size: 1rem;
+  }
+
+  .landing-actions > button {
+    flex: 1 1 100%;
+    min-height: 48px;
+  }
+
+  .invoice-page {
+    padding: 18px 12px 28px;
+  }
+
+  .invoice-topbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+  }
+
+  .invoice-heading {
+    min-width: 0;
+  }
+
+  .invoice-topbar h2 {
+    font-size: clamp(1.1rem, 5vw, 1.5rem);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .header-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .header-actions button,
+  .modal-actions button {
+    min-width: 0;
+    min-height: 46px;
+    padding-inline: 10px;
+    font-size: 0.84rem;
+  }
+
   .two-col,
   .invoice-upper-grid,
   .billing-grid,
@@ -485,10 +564,8 @@ input, textarea {
     grid-template-columns: 1fr;
   }
 
-  .invoice-topbar,
-  .header-actions {
-    flex-direction: column;
-    align-items: flex-start;
+  .form-panel {
+    padding: 16px 12px;
   }
 
   .table-header-row {
@@ -496,10 +573,92 @@ input, textarea {
   }
 
   .item-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 12px;
+    align-items: end;
+    padding: 12px;
+    border: 1px solid #dbe2ea;
+    border-radius: 12px;
+    background: #f8fafc;
   }
 
-  .item-row strong {
+  .item-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .item-field span,
+  .item-total span {
+    display: block;
+    color: #475569;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .item-description {
     grid-column: 1 / -1;
+  }
+
+  .item-field input {
+    min-height: 46px;
+    padding: 10px 9px;
+  }
+
+  .item-total {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-self: center;
+  }
+
+  .remove-row {
+    min-height: 44px;
+  }
+
+  .add-row-button {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  .preview-panel {
+    padding: 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  .physical-bill {
+    min-width: 660px;
+  }
+
+  .modal-backdrop {
+    padding: 12px;
+    align-items: start;
+    overflow-y: auto;
+  }
+
+  .company-modal {
+    width: 100%;
+    max-height: calc(100svh - 24px);
+    overflow-y: auto;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .modal-header {
+    position: sticky;
+    top: -16px;
+    z-index: 1;
+    padding: 12px 0;
+    background: white;
+  }
+
+  .modal-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    position: sticky;
+    bottom: -16px;
+    padding: 12px 0;
+    background: white;
   }
 }
