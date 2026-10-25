@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import Database from 'better-sqlite3';
-import PDFDocument from 'pdfkit';
 import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
@@ -672,69 +671,6 @@ app.get('/api/reports', (_req, res) => {
   res.json({ summary, taxSummary });
 });
 
-app.get('/api/invoices/:id/pdf', (req, res) => {
-  const invoice = getInvoiceDetail(req.params.id);
-  if (!invoice) return res.status(404).json({ error: 'Invoice not found.' });
-
-  const company = getCompanyProfile();
-  const customer = getCustomerById(invoice.customer_id);
-
-  const doc = new PDFDocument({ size: 'A4', margin: 40 });
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `inline; filename="${invoice.invoice_number}.pdf"`);
-  doc.pipe(res);
-
-  const primaryColor = company.brand_color || '#1e3a8a';
-  const secondaryColor = company.accent_color || '#0ea5e9';
-
-  doc.fillColor(primaryColor).fontSize(24).text(company.display_name || company.legal_name, 50, 50);
-  doc.fillColor('#444').fontSize(10).text((company.address || '').replace(/\n/g, ' '), 50, 85);
-  doc.fillColor('#444').fontSize(10).text(`Email: ${company.email || ''} | Phone: ${company.phone || ''}`);
-
-  const rightX = 430;
-  doc.fillColor(secondaryColor).fontSize(20).text('INVOICE', rightX, 55, { align: 'right' });
-  doc.fillColor('#222').fontSize(10).text(`Invoice No: ${invoice.invoice_number}`, rightX, 90, { align: 'right' });
-  doc.text(`Issue Date: ${invoice.issue_date}`, rightX, 106, { align: 'right' });
-  doc.text(`Due Date: ${invoice.due_date}`, rightX, 122, { align: 'right' });
-
-  doc.moveTo(50, 150).lineTo(545, 150).stroke();
-
-  const billToX = 50;
-  const shipToX = 320;
-  doc.fillColor('#222').fontSize(12).text('Bill To', billToX, 170).fontSize(10).text(customer?.name || '', billToX, 188).text(customer?.company || '', billToX, 202).text(customer?.billing_address || '', billToX, 216);
-
-  doc.fillColor('#222').fontSize(12).text('Payment Details', shipToX, 170).fontSize(10).text(`Bank: ${company.bank_name || ''}`, shipToX, 188).text(`A/c: ${company.account_name || ''}`, shipToX, 202).text(`A/C No: ${company.account_number || ''}`, shipToX, 216).text(`IFSC: ${company.ifsc_code || ''}`, shipToX, 230);
-
-  const tableTop = 270;
-  const widths = [40, 200, 70, 65, 70, 75];
-  const xStart = [50, 90, 290, 360, 425, 500];
-
-  doc.fillColor(primaryColor).fontSize(10).text('S.No', xStart[0], tableTop, { bold: true }).text('Description', xStart[1], tableTop).text('Qty', xStart[2], tableTop).text('Unit Price', xStart[3], tableTop).text('Tax', xStart[4], tableTop).text('Total', xStart[5], tableTop);
-  doc.moveTo(50, tableTop + 14).lineTo(545, tableTop + 14).stroke();
-
-  let y = tableTop + 24;
-  invoice.items.forEach((item, index) => {
-    const lineY = y + index * 22;
-    doc.fontSize(9).fillColor('#333').text(index + 1, xStart[0], lineY).text(item.description || '', xStart[1], lineY).text(String(item.quantity || 0), xStart[2], lineY).text(`₹${Number(item.unit_price || 0).toFixed(2)}`, xStart[3], lineY).text(`${Number(item.tax_rate || 0)}%`, xStart[4], lineY).text(`₹${Number(item.total || 0).toFixed(2)}`, xStart[5], lineY);
-  });
-
-  y = tableTop + (invoice.items.length * 22) + 40;
-  doc.moveTo(350, y).lineTo(545, y).stroke();
-  doc.fontSize(10).fillColor('#222').text('Subtotal', 360, y + 8).text(`₹${Number(invoice.subtotal || 0).toFixed(2)}`, 470, y + 8, { align: 'right' });
-  doc.text('Tax', 360, y + 24).text(`₹${Number(invoice.tax_amount || 0).toFixed(2)}`, 470, y + 24, { align: 'right' });
-  doc.text('Additional Charges', 360, y + 40).text(`₹${Number(invoice.additional_charges || 0).toFixed(2)}`, 470, y + 40, { align: 'right' });
-  doc.text('Discount', 360, y + 56).text(`-₹${Number(invoice.invoice_discount || 0).toFixed(2)}`, 470, y + 56, { align: 'right' });
-  doc.fillColor(primaryColor).fontSize(12).text('Total', 360, y + 72).text(`₹${Number(invoice.total || 0).toFixed(2)}`, 470, y + 72, { align: 'right' });
-
-  doc.fillColor('#444').fontSize(9).text(company.notes || '', 50, y + 110, { width: 430 });
-  doc.text(company.footer || '', 50, y + 150, { width: 430 });
-
-  if (company.authorized_signatory) {
-    doc.text(`Authorized Signatory: ${company.authorized_signatory}`, 410, 760, { align: 'right' });
-  }
-
-  doc.end();
-});
 
 ensureSchema();
 

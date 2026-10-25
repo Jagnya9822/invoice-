@@ -146,6 +146,68 @@ function App() {
     }));
   };
 
+  const openInvoicePdf = () => {
+    const invoiceSheet = document.querySelector('.physical-bill');
+    if (!invoiceSheet) {
+      throw new Error('The invoice preview is unavailable for PDF export.');
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      throw new Error('Allow pop-ups for this site to download or print the invoice.');
+    }
+
+    const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .map((styleNode) => (styleNode.tagName === 'LINK' ? styleNode.outerHTML : `<style>${styleNode.textContent}</style>`))
+      .join('\n');
+
+    return {
+      printWindow,
+      invoiceMarkup: invoiceSheet.outerHTML,
+      styles,
+    };
+  };
+
+  const writeInvoicePdf = ({ printWindow, invoiceMarkup, styles }, invoiceNumber) => {
+    printWindow.document.open();
+    printWindow.document.write(`<!doctype html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Invoice</title>
+          ${styles}
+          <style>
+            @page { size: A4 portrait; margin: 12px; }
+            html, body { width: 100%; min-height: 0; margin: 0; background: #fff !important; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .physical-bill { width: 100%; height: auto; margin: 0; }
+            .physical-items-table { page-break-inside: auto; }
+            .physical-items-table thead { display: table-header-group; }
+            .physical-items-table tr,
+            .physical-summary-wrap,
+            .physical-lower-row,
+            .physical-notes-box,
+            .physical-signature-box {
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+          </style>
+          <script>
+            window.addEventListener('load', async () => {
+              try { await document.fonts.ready; } catch {}
+              window.focus();
+              window.print();
+            });
+            window.addEventListener('afterprint', () => window.close());
+          </script>
+        </head>
+        <body>${invoiceMarkup}</body>
+      </html>`);
+    printWindow.document.close();
+    printWindow.document.title = invoiceNumber || 'Invoice';
+  };
+
   const saveCompanySettings = async (event) => {
     event.preventDefault();
     try {
@@ -166,10 +228,13 @@ function App() {
   };
 
   const handleSaveInvoice = async () => {
+    let printJob;
     try {
       if (!invoiceForm.buyerName.trim()) {
         throw new Error('Buyer name is required.');
       }
+
+      printJob = openInvoicePdf();
 
       const customerPayload = {
         name: invoiceForm.buyerName,
@@ -232,8 +297,9 @@ function App() {
       const invoice = await readJson(invoiceResponse);
       setSavedInvoiceId(invoice.id);
       setAlert('Invoice prepared successfully.');
-      window.open(`${API}/invoices/${invoice.id}/pdf`, '_blank');
+      writeInvoicePdf(printJob, invoiceForm.invoiceNo);
     } catch (error) {
+      if (printJob?.printWindow && !printJob.printWindow.closed) printJob.printWindow.close();
       setAlert(error.message || 'Invoice could not be created.');
     }
   };
